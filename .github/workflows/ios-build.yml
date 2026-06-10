@@ -1,0 +1,38 @@
+# 无 Mac 时可在 GitHub 云端编译 iOS 工程（上架仍需配置签名 Secrets）
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ClipboardExpense/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: ClipboardExpense
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Build for Simulator
+        run: |
+          xcodebuild build \
+            -project ClipboardExpense.xcodeproj \
+            -scheme ClipboardExpense \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project ClipboardExpense.xcodeproj \
+            -scheme ClipboardExpense \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO

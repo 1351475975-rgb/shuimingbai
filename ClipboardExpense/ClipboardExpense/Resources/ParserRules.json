@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "alipay",
+      "source": "alipay",
+      "keywords": ["支付宝"],
+      "pattern": "(?:支付宝).*?[¥￥](\\d+(?:\\.\\d{1,2})?)\\s*(.+)",
+      "confidence": "high"
+    },
+    {
+      "id": "wechat",
+      "source": "wechat",
+      "keywords": ["微信支付"],
+      "pattern": "微信支付.*?[¥￥](\\d+(?:\\.\\d{1,2})?)\\s*(.+)",
+      "confidence": "high"
+    },
+    {
+      "id": "bank",
+      "source": "bank",
+      "keywords": ["消费", "元"],
+      "pattern": "消费(\\d+(?:\\.\\d{1,2})?)元\\s*(.+)",
+      "confidence": "high"
+    },
+    {
+      "id": "meituan",
+      "source": "meituan",
+      "keywords": ["美团"],
+      "pattern": "美团.*?[¥￥](\\d+(?:\\.\\d{1,2})?)\\s*(.+)",
+      "confidence": "high"
+    }
+  ],
+  "merchantCategoryMap": {
+    "麦当劳": "餐饮",
+    "肯德基": "餐饮",
+    "星巴克": "餐饮",
+    "全家": "餐饮",
+    "滴滴": "交通"
+  }
+}
