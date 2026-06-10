@@ -10,6 +10,12 @@ const MERCHANT_CATEGORY_MAP = {
   滴滴: '交通',
   美团: '餐饮',
   外卖: '餐饮',
+  羊肉汤: '餐饮',
+  饭店: '餐饮',
+  餐厅: '餐饮',
+  火锅: '餐饮',
+  咖啡: '餐饮',
+  奶茶: '餐饮',
 };
 
 const RULES = [
@@ -71,8 +77,51 @@ function categorize(merchant, text) {
   return '其他';
 }
 
+/** 支付成功通知类：消费金额 / 消费门店 / 消费时间 分行 */
+function parseStructuredFields(text) {
+  const amountMatch = text.match(/消费金额[:：]+\s*:?\s*(\d+(?:\.\d{1,2})?)\s*元?/);
+  if (!amountMatch) return null;
+
+  const amount = parseFloat(amountMatch[1]);
+  if (Number.isNaN(amount)) return null;
+
+  const merchantMatch = text.match(/消费门店[:：]+\s*:?\s*(.+?)(?:\r?\n|$)/);
+  const merchant = merchantMatch?.[1]?.trim() || null;
+
+  const timeMatch = text.match(
+    /消费时间[:：]+\s*:?\s*(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/
+  );
+  let time = new Date();
+  if (timeMatch) {
+    time = new Date(
+      +timeMatch[1],
+      +timeMatch[2] - 1,
+      +timeMatch[3],
+      +timeMatch[4],
+      +timeMatch[5]
+    );
+  } else {
+    time = extractTime(text) || new Date();
+  }
+
+  let source = 'generic';
+  if (text.includes('微信')) source = 'wechat';
+  else if (text.includes('支付宝')) source = 'alipay';
+
+  return {
+    amount,
+    merchant,
+    category: categorize(merchant, text),
+    time,
+    source,
+    confidence: merchant ? 'high' : 'medium',
+    rawText: text,
+  };
+}
+
 function extractTime(text) {
   const patterns = [
+    /(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/,
     /(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/,
     /(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/,
   ];
@@ -80,6 +129,9 @@ function extractTime(text) {
   for (const pattern of patterns) {
     const m = text.match(pattern);
     if (!m) continue;
+    if (m[0].includes('年')) {
+      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    }
     if (m.length === 6) {
       return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
     }
@@ -110,6 +162,9 @@ function matchRule(rule, text) {
 export function parsePayment(text) {
   const trimmed = (text || '').trim();
   if (!trimmed) return null;
+
+  const structured = parseStructuredFields(trimmed);
+  if (structured) return structured;
 
   for (const rule of RULES) {
     const result = matchRule(rule, trimmed);

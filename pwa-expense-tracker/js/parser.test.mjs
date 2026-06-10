@@ -14,6 +14,27 @@ const samples = [
 ];
 
 let failed = 0;
+
+const structuredText = `支付成功通知
+订单编号：: 0461368606629683439109876
+消费金额：: 9.9元
+消费门店：: 兴老大·单县羊肉汤（严村里店）
+消费时间：: 2026年06月10日 11:53`;
+
+const structured = parsePayment(structuredText);
+if (!structured || structured.amount !== 9.9) {
+  console.error('FAIL 支付成功通知金额:', structured);
+  failed++;
+} else if (structured.merchant !== '兴老大·单县羊肉汤（严村里店）') {
+  console.error('FAIL 支付成功通知门店:', structured.merchant);
+  failed++;
+} else if (structured.category !== '餐饮') {
+  console.error('FAIL 支付成功通知分类:', structured.category);
+  failed++;
+} else {
+  console.log(`OK 支付成功通知: ¥${structured.amount} ${structured.merchant} [${structured.category}]`);
+}
+
 for (const [name, text, expected] of samples) {
   const r = parsePayment(text);
   if (!r || r.amount !== expected) {

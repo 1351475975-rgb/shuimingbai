@@ -1,4 +1,4 @@
-const CACHE = 'clipboard-expense-v1';
+const CACHE = 'clipboard-expense-v2';
 const ASSETS = [
   './',
   './index.html',
