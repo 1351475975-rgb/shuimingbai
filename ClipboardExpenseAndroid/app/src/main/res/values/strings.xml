@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">剪贴板记账</string>
+    <string name="channel_payment">支付提醒</string>
+    <string name="confirm_notification_title">检测到支付</string>
+</resources>

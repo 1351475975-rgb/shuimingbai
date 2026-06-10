@@ -6,6 +6,7 @@
 |------|------|--------|
 | **PWA（先用这个）** | [`pwa-expense-tracker/`](pwa-expense-tracker/) | 仅 Windows + iPhone |
 | **iOS 原生** | [`ClipboardExpense/`](ClipboardExpense/) | Mac 或 [云 Mac 指南](docs/cloud-mac-ios-build.md) |
+| **Android 原生** | [`ClipboardExpenseAndroid/`](ClipboardExpenseAndroid/) | Windows + Android Studio + 安卓机 |
 
 ### 只有手机、没有 Mac？
 
