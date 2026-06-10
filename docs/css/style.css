@@ -361,9 +361,20 @@ textarea {
   margin-top: 16px;
 }
 
-.confirm-actions .btn {
-  flex: 1;
-  margin-top: 0;
+.paste-hint {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.paste-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  resize: vertical;
+  margin-bottom: 4px;
 }
 
 @keyframes slideDown {

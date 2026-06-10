@@ -77,4 +77,56 @@ final class PaymentParserTests: XCTestCase {
     func testCategorizeDidi() {
         XCTAssertEqual(PaymentParser.categorize(merchant: "滴滴出行", text: ""), "交通")
     }
+
+    func testStructuredPaymentNotification() throws {
+        let text = """
+        支付成功通知
+        消费金额：: 9.9元
+        消费门店：: 兴老大·单县羊肉汤（严村里店）
+        消费时间：: 2026年06月10日 11:53
+        """
+        let parsed = try XCTUnwrap(PaymentParser.parse(text))
+        XCTAssertEqual(parsed.amount, Decimal(string: "9.9"))
+        XCTAssertEqual(parsed.merchant, "兴老大·单县羊肉汤（严村里店）")
+        XCTAssertEqual(parsed.category, "餐饮")
+    }
+
+    func testWechatPayNotification() throws {
+        let text = "你向杭州余杭区良渚陈素红副食品店付款14.00元"
+        let parsed = try XCTUnwrap(PaymentParser.parse(text))
+        XCTAssertEqual(parsed.amount, Decimal(string: "14.00"))
+        XCTAssertTrue(parsed.merchant?.contains("副食品店") == true)
+        XCTAssertEqual(parsed.source, .wechat)
+    }
+
+    func testWechatBillDetail() throws {
+        let text = """
+        账单
+        杭州余杭区良渚陈素红副食品店
+        -14.00
+        支付成功
+        支付时间
+        2026年6月10日 12:11:38
+        """
+        let parsed = try XCTUnwrap(PaymentParser.parse(text))
+        XCTAssertEqual(parsed.amount, Decimal(string: "14"))
+        XCTAssertEqual(parsed.merchant, "杭州余杭区良渚陈素红副食品店")
+    }
+
+    func testAlipayBillDetail() throws {
+        let text = """
+        账单详情
+        单县羊肉汤
+        -9.90
+        交易成功
+        支付时间
+        2026-06-09 20:16:15
+        账单分类
+        餐饮美食
+        """
+        let parsed = try XCTUnwrap(PaymentParser.parse(text))
+        XCTAssertEqual(parsed.amount, Decimal(string: "9.90"))
+        XCTAssertEqual(parsed.merchant, "单县羊肉汤")
+        XCTAssertEqual(parsed.category, "餐饮")
+    }
 }

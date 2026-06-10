@@ -142,17 +142,43 @@ function processText(text) {
   hideClipboardBanner();
 }
 
+function isIOS() {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
+function openPasteSheet() {
+  const overlay = document.getElementById('paste-overlay');
+  const ta = document.getElementById('paste-textarea');
+  ta.value = '';
+  overlay.classList.add('open');
+  setTimeout(() => ta.focus(), 100);
+}
+
+function closePasteSheet() {
+  document.getElementById('paste-overlay')?.classList.remove('open');
+}
+
 async function pasteAndParse() {
+  hideClipboardBanner();
+
+  // iOS 主屏幕 PWA 经常拒绝 clipboard.readText，改用手动粘贴弹层
+  if (isIOS()) {
+    openPasteSheet();
+    return;
+  }
+
   try {
     const text = await readClipboardText();
     if (!text) {
-      alert('剪贴板为空');
+      openPasteSheet();
       return;
     }
     processText(text);
-  } catch (err) {
-    alert(err.message || '无法读取剪贴板，请到「记账」页手动粘贴');
-    switchToTab('entry');
+  } catch {
+    openPasteSheet();
   }
 }
 
@@ -184,6 +210,23 @@ document.querySelectorAll('.nav-btn').forEach((btn) => {
 document.getElementById('btn-paste').addEventListener('click', pasteAndParse);
 document.getElementById('banner-paste').addEventListener('click', pasteAndParse);
 document.getElementById('banner-dismiss').addEventListener('click', hideClipboardBanner);
+
+document.getElementById('paste-cancel').addEventListener('click', closePasteSheet);
+document.getElementById('paste-parse').addEventListener('click', () => {
+  const text = document.getElementById('paste-textarea').value.trim();
+  if (!text) return;
+  closePasteSheet();
+  processText(text);
+});
+document.getElementById('paste-textarea').addEventListener('paste', () => {
+  setTimeout(() => {
+    const text = document.getElementById('paste-textarea').value.trim();
+    if (text.length > 10) {
+      closePasteSheet();
+      processText(text);
+    }
+  }, 50);
+});
 
 document.getElementById('btn-parse-entry').addEventListener('click', () => {
   const text = document.getElementById('entry-text').value.trim();

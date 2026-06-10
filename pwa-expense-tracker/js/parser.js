@@ -16,7 +16,25 @@ const MERCHANT_CATEGORY_MAP = {
   火锅: '餐饮',
   咖啡: '餐饮',
   奶茶: '餐饮',
+  副食品: '购物',
+  超市: '购物',
 };
+
+const BILL_CATEGORY_MAP = [
+  [/餐饮|美食|下馆/, '餐饮'],
+  [/购物|超市|副食|日用/, '购物'],
+  [/交通|出行|打车|地铁/, '交通'],
+  [/生活|缴费|充值/, '生活'],
+  [/娱乐|游戏|电影/, '娱乐'],
+];
+
+function mapBillCategory(label) {
+  if (!label) return null;
+  for (const [pattern, cat] of BILL_CATEGORY_MAP) {
+    if (pattern.test(label)) return cat;
+  }
+  return null;
+}
 
 const RULES = [
   {
@@ -54,6 +72,7 @@ const RULES = [
 const GENERIC_PATTERNS = [
   /[¥￥]\s*(\d+(?:\.\d{1,2})?)/,
   /(\d+(?:\.\d{1,2})?)\s*元/,
+  /(?:^|\n)\s*-(\d+(?:\.\d{1,2})?)\s*(?:\n|$)/m,
 ];
 
 const SOURCE_LABELS = {
@@ -121,25 +140,87 @@ function parseStructuredFields(text) {
 
 function extractTime(text) {
   const patterns = [
-    /(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/,
-    /(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/,
-    /(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/,
+    [/支付时间\s*(?:[:：]\s*)?(?:\r?\n\s*)?(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2}):(\d{2})/, 'cnSec'],
+    [/支付时间\s*(?:[:：]\s*)?(?:\r?\n\s*)?(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/, 'isoSec'],
+    [/支付时间\s*(?:[:：]\s*)?(?:\r?\n\s*)?(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/, 'iso'],
+    [/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2}):(\d{2})/, 'cnSec'],
+    [/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/, 'cn'],
+    [/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/, 'iso'],
+    [/(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/, 'md'],
   ];
   const now = new Date();
-  for (const pattern of patterns) {
+  for (const [pattern, kind] of patterns) {
     const m = text.match(pattern);
     if (!m) continue;
-    if (m[0].includes('年')) {
+    if (kind === 'cnSec') {
+      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+    }
+    if (kind === 'isoSec' || kind === 'iso') {
+      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], kind === 'isoSec' ? +m[6] : 0);
+    }
+    if (kind === 'cn') {
       return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
     }
-    if (m.length === 6) {
-      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
-    }
-    if (m.length === 5) {
+    if (kind === 'md') {
       return new Date(now.getFullYear(), +m[1] - 1, +m[2], +m[3], +m[4]);
     }
   }
   return null;
+}
+
+/** 微信/支付宝账单详情页复制文本 */
+function parseBillDetail(text) {
+  const isBill =
+    /账单详情|账单/.test(text) &&
+    (/支付成功|交易成功/.test(text) || /支付时间/.test(text));
+  if (!isBill) return null;
+
+  const negAmount = text.match(/(?:^|\n)\s*-(\d+(?:\.\d{1,2})?)\s*(?:\n|$)/m);
+  const posAmount = text.match(/消费金额[:：]+\s*:?\s*(\d+(?:\.\d{1,2})?)/);
+  const amount = negAmount
+    ? parseFloat(negAmount[1])
+    : posAmount
+      ? parseFloat(posAmount[1])
+      : NaN;
+  if (Number.isNaN(amount)) return null;
+
+  let merchant =
+    text.match(/商户全称[:：]\s*(.+?)(?:\r?\n|$)/)?.[1]?.trim() ||
+    text.match(/商品[:：]\s*(.+?)(?:\r?\n|$)/)?.[1]?.trim()?.replace(/-消费$/, '') ||
+    null;
+
+  if (!merchant) {
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const billIdx = lines.findIndex((l) => l === '账单详情' || l === '账单');
+    if (billIdx >= 0) {
+      for (let i = billIdx + 1; i < Math.min(billIdx + 4, lines.length); i++) {
+        const line = lines[i];
+        if (/^-?\d+(\.\d+)?$/.test(line)) continue;
+        if (/成功|失败|状态/.test(line)) continue;
+        merchant = line.replace(/-消费$/, '');
+        break;
+      }
+    }
+  }
+
+  const catLabel =
+    text.match(/账单分类[:：]\s*(.+?)(?:\r?\n|$)/)?.[1]?.trim() ||
+    text.match(/账单分类\s*\n\s*(.+?)(?:\r?\n|$)/)?.[1]?.trim();
+  const category = mapBillCategory(catLabel) || categorize(merchant, text);
+
+  let source = 'generic';
+  if (/微信|零钱|收单机构.*建行|财付通/.test(text)) source = 'wechat';
+  else if (/支付宝|余额宝|花呗/.test(text)) source = 'alipay';
+
+  return {
+    amount,
+    merchant,
+    category,
+    time: extractTime(text) || new Date(),
+    source,
+    confidence: merchant ? 'high' : 'medium',
+    rawText: text,
+  };
 }
 
 function matchRule(rule, text) {
@@ -165,6 +246,9 @@ export function parsePayment(text) {
 
   const structured = parseStructuredFields(trimmed);
   if (structured) return structured;
+
+  const billDetail = parseBillDetail(trimmed);
+  if (billDetail) return billDetail;
 
   for (const rule of RULES) {
     const result = matchRule(rule, trimmed);

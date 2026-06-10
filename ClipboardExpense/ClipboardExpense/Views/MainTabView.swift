@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @State private var appState = AppState.shared
+
     var body: some View {
         TabView {
             HomeView()
@@ -13,10 +15,22 @@ struct MainTabView: View {
                     Label("记账", systemImage: "plus.circle")
                 }
 
+            OnboardingShortcutsView()
+                .tabItem {
+                    Label("自动记账", systemImage: "bell.badge")
+                }
+
             CategoryManageView()
                 .tabItem {
                     Label("分类", systemImage: "tag")
                 }
+        }
+        .sheet(isPresented: $appState.showConfirmSheet) {
+            if let parsed = appState.pendingParsed {
+                ConfirmExpenseSheet(parsed: parsed) {
+                    appState.clearPending()
+                }
+            }
         }
     }
 }

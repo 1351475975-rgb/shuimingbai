@@ -75,6 +75,19 @@
     <button type="button" id="btn-paste" class="btn btn-primary">粘贴记账</button>
   </div>
 
+  <!-- iOS 手动粘贴弹层（避免剪贴板 API 被拒） -->
+  <div id="paste-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="paste-title">
+    <div class="confirm-sheet">
+      <h2 id="paste-title">粘贴支付文本</h2>
+      <p class="muted paste-hint">先复制支付通知，再<strong>长按</strong>下方输入框 → 点「粘贴」</p>
+      <textarea id="paste-textarea" class="paste-textarea" placeholder="在此粘贴…"></textarea>
+      <div class="confirm-actions">
+        <button type="button" id="paste-cancel" class="btn btn-secondary">取消</button>
+        <button type="button" id="paste-parse" class="btn btn-primary">解析记账</button>
+      </div>
+    </div>
+  </div>
+
   <nav class="bottom-nav" aria-label="主导航">
     <button type="button" class="nav-btn active" data-tab="home">账单</button>
     <button type="button" class="nav-btn" data-tab="entry">记账</button>
