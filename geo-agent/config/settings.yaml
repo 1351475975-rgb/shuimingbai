@@ -1,0 +1,24 @@
+schedule:
+  daily_run_hour: 8
+  articles_per_day: 1
+
+llm:
+  temperature: 0.7
+  max_tokens: 4096
+
+images:
+  cover_count: 2          # 16:9 + 1:1
+  inline_count: 3
+  pexels_per_query: 1
+
+pipeline:
+  pm_max_retries: 2
+  publish_interval_min_sec: 300
+  publish_interval_max_sec: 1800
+
+hotspot:
+  sources:
+    - weibo
+    - baidu
+    - zhihu
+  top_n: 15

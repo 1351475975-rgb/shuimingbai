@@ -1,0 +1,124 @@
+# 风控档位: 1=极低 … 5=极高
+# mode: auto_draft | auto_publish | generate_only
+
+platforms:
+  wordpress:
+    name: WordPress
+    risk: 1
+    mode: auto_publish
+    enabled: true
+
+  wechat:
+    name: 微信公众号
+    risk: 2
+    mode: auto_draft
+    enabled: true
+
+  qiehao:
+    name: 企鹅号
+    risk: 2
+    mode: generate_only
+    enabled: true
+    note: 建议走公众号官方同步，本框架仅生成素材
+
+  csdn:
+    name: CSDN
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  juejin:
+    name: 掘金
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  cnblogs:
+    name: 博客园
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  segmentfault:
+    name: SegmentFault
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  oschina:
+    name: 开源中国
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  jianshu:
+    name: 简书
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  toutiao:
+    name: 头条号
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  baijiahao:
+    name: 百家号
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  netease:
+    name: 网易号
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  sohu:
+    name: 搜狐号
+    risk: 3
+    mode: auto_draft
+    enabled: true
+
+  zhihu:
+    name: 知乎
+    risk: 4
+    mode: auto_draft
+    enabled: true
+
+  weibo:
+    name: 微博
+    risk: 4
+    mode: auto_draft
+    enabled: true
+
+  bilibili:
+    name: B站专栏
+    risk: 4
+    mode: auto_draft
+    enabled: true
+
+  xiaohongshu:
+    name: 小红书
+    risk: 5
+    mode: generate_only
+    enabled: true
+
+  douyin:
+    name: 抖音图文
+    risk: 5
+    mode: generate_only
+    enabled: true
+
+  kuaishou:
+    name: 快手
+    risk: 5
+    mode: generate_only
+    enabled: true
+
+  shipinhao:
+    name: 微信视频号
+    risk: 5
+    mode: generate_only
+    enabled: true

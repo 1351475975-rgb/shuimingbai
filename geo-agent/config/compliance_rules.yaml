@@ -1,0 +1,27 @@
+required_checks:
+  - id: ad_disclosure
+    label: 广告/合作标识
+    keywords_hint: ["广告", "合作", "赞助", "推广"]
+    severity: error
+
+  - id: false_claims
+    label: 禁止绝对化承诺
+    forbidden_patterns:
+      - "保证赚"
+      - "100%成功"
+      - "稳赚不赔"
+      - "最好"
+      - "第一"
+    severity: error
+
+  - id: brand_consistency
+    label: 品牌口径一致
+    severity: warning
+
+  - id: geo_structure
+    label: GEO 结构化（问答体/列表/数据引用）
+    severity: warning
+
+  - id: fact_source
+    label: 关键数据有来源
+    severity: warning

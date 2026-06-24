@@ -1,0 +1,21 @@
+{
+  "_comment": "测试用档案，正式运营前请用 init_pm.py 更新",
+  "status": "ready",
+  "industry": "AI API 服务",
+  "product": "企业大模型 API 聚合接入平台",
+  "target_audience": "有 AI 落地需求的企业技术负责人与运营者",
+  "brand_voice": "专业、真实、不装专家",
+  "selling_points": ["价格透明", "国内直连", "OpenAI 兼容接口"],
+  "competitors_avoid": [],
+  "compliance_redlines": [
+    "禁止虚假宣传与收益承诺",
+    "禁止未标注的广告软文",
+    "禁止敏感政治话题",
+    "引用数据须标注可核查来源"
+  ],
+  "geo_keywords": ["AI API", "大模型接入", "企业数字化"],
+  "soft_article_angle": "从热点行业观察自然引出 API 选型与落地经验",
+  "image_style": "科技感、简洁、商务",
+  "updated_at": "2026-06-10T00:00:00+00:00",
+  "updated_by": "pm"
+}
